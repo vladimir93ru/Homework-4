@@ -1,0 +1,88 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+// Структура для стека
+typedef struct {
+	char data[100];
+	int top;
+} Stack;
+
+// Функция для инициализации стека
+void initStack(Stack* stack) {
+	stack->top = -1;
+}
+
+// Функция для проверки пустоты стека
+int isEmpty(Stack* stack) {
+	return stack->top == -1;
+}
+
+// Функция для добавления элемента в стек
+void push(Stack* stack, char c) {
+	stack->data[++stack->top] = c;
+}
+
+// Функция для удаления элемента из стека
+char pop(Stack* stack) {
+	return stack->data[stack->top--];
+}
+
+// Функция для получения приоритета операции
+int getPriority(char c) {
+	switch (c) {
+		case '&':
+			return 2;
+		case '|':
+			return 1;
+		case '^':
+			return 3;
+		default:
+			return 0;
+	}
+}
+
+// Функция для перевода из инфиксной записи в обратную польскую
+void infixToPostfix(char* infix, char* postfix) {
+	Stack stack;
+	initStack(&stack);
+
+	int i = 0, j = 0;
+	while (infix[i]!= '\0') {
+		if (isalnum(infix[i])) {
+			postfix[j++] = infix[i++];
+		} else if (infix[i] == '(') {
+			push(&stack, infix[i++]);
+		} else if (infix[i] == ')') {
+			while (stack.data[stack.top]!= '(') {
+				postfix[j++] = pop(&stack);
+			}
+			pop(&stack);
+			i++;
+		} else {
+			while (!isEmpty(&stack) && getPriority(stack.data[stack.top]) >= getPriority(infix[i])) {
+				postfix[j++] = pop(&stack);
+			}
+			push(&stack, infix[i++]);
+		}
+	}
+
+	while (!isEmpty(&stack)) {
+		postfix[j++] = pop(&stack);
+	}
+
+	postfix[j] = '\0';
+}
+
+int main() {
+	char infix[100], postfix[100];
+
+	printf("Enter the expression in the infix entry: ");
+	scanf("%s", infix);
+
+	infixToPostfix(infix, postfix);
+
+	printf("Expression in reverse Polish notation: %s\n", postfix);
+
+	return 0;
+}
